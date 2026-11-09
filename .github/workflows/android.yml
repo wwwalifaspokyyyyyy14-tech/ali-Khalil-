@@ -24,8 +24,12 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          cmdline-tools-version: '15859902'
+          accept-android-sdk-licenses: true
+          packages: platform-tools
 
       - name: Install dependencies
         run: npm ci
@@ -35,7 +39,7 @@ jobs:
 
       - name: Build APK
         working-directory: android
-        run: chmod +x gradlew && ./gradlew assembleDebug
+        run: chmod +x gradlew && ./gradlew --no-daemon assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
