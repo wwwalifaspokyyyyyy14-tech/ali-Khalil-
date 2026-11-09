@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALI-KHALIL</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#030803;color:#00ff66;
+ font-family:monospace;padding:15px
+}
+header{
+ text-align:center;border:1px solid #00ff66;
+ padding:20px;border-radius:12px;
+ box-shadow:0 0 15px #00ff6644
+}
+h1{letter-spacing:4px;text-shadow:0 0 12px #00ff66}
+.status{color:#8affad;font-size:12px}
+.grid{
+ display:grid;grid-template-columns:1fr 1fr;
+ gap:12px;margin-top:20px
+}
+.card{
+ background:#071207;border:1px solid #087b37;
+ padding:17px 10px;border-radius:10px;
+ text-align:center;cursor:pointer
+}
+.card:active{background:#12351b}
+.card b{display:block;margin-top:9px}
+#output{
+ margin-top:18px;padding:15px;
+ border:1px solid #087b37;border-radius:10px;
+ min-height:150px;white-space:pre-wrap;
+ overflow-wrap:anywhere
+}
+button,input{
+ background:#001a08;color:#00ff66;
+ border:1px solid #00ff66;padding:11px;
+ border-radius:6px;width:100%;margin-top:8px
+}
+footer{text-align:center;margin-top:25px;color:#477b57}
+</style>
+</head>
+<body>
+
+<header>
+<h1>ALI-KHALIL</h1>
+<div>CYBER SECURITY TERMINAL</div>
+<p class="status">● SYSTEM ONLINE</p>
+</header>
+
+<div class="grid">
+<div class="card" onclick="device()">
+📱<b>معلومات الجهاز</b>
+</div>
+<div class="card" onclick="urlCheck()">
+🌐<b>تحليل الروابط</b>
+</div>
+<div class="card" onclick="password()">
+🔐<b>قوة كلمة المرور</b>
+</div>
+<div class="card" onclick="matrix()">
+💻<b>MATRIX</b>
+</div>
+<div class="card" onclick="webPentest()">
+🔎<b>WEB PENTESTING</b>
+</div>
+<div class="card" onclick="about()">
+🛡️<b>حول التطبيق</b>
+</div>
+<div class="card" onclick="clearOutput()">
+🧹<b>مسح الشاشة</b>
+</div>
+</div>
+
+<div id="output">ALI-KHALIL TERMINAL
+جاهز لاستقبال الأوامر...
+</div>
+
+<footer>ALI-KHALIL © 2026</footer>
+
+<script>
+const out=document.getElementById('output');
+
+function show(text){
+ out.textContent=text;
+}
+
+function device(){
+ show(
+ 'DEVICE INFORMATION\n\n'+
+ 'Platform: '+navigator.platform+
+ '\nLanguage: '+navigator.language+
+ '\nScreen: '+screen.width+' x '+screen.height+
+ '\nBrowser: '+navigator.userAgent
+ );
+}
+
+function urlCheck(){
+ const value=prompt('أدخل الرابط المراد تحليله:');
+ if(!value)return;
+ try{
+  const u=new URL(value);
+  let result='URL ANALYSIS\n\n';
+  result+='Protocol: '+u.protocol+'\n';
+  result+='Domain: '+u.hostname+'\n';
+  result+='HTTPS: '+(u.protocol==='https:'?'YES':'NO')+'\n';
+  result+='Credentials: '+(u.username||u.password?'WARNING':'NONE');
+  show(result);
+ }catch(e){
+  show('ERROR: رابط غير صالح');
+ }
+}
+
+function password(){
+ const p=prompt('أدخل كلمة تجريبية لتحليل قوتها:');
+ if(p===null)return;
+ let score=0;
+ if(p.length>=12)score++;
+ if(/[A-Z]/.test(p))score++;
+ if(/[a-z]/.test(p))score++;
+ if(/[0-9]/.test(p))score++;
+ if(/[^A-Za-z0-9]/.test(p))score++;
+ show('PASSWORD ANALYSIS\n\nScore: '+score+'/5\n'+
+ (score>=4?'Strong':score>=2?'Medium':'Weak')+
+ '\nملاحظة: لا تدخل كلمة مرورك الحقيقية.');
+}
+
+function matrix(){
+ let chars='01ABCDEF';
+ let result='MATRIX TERMINAL\n\n';
+ for(let i=0;i<18;i++){
+  for(let j=0;j<30;j++)
+   result+=chars[Math.floor(Math.random()*chars.length)];
+  result+='\n';
+ }
+ show(result);
+}
+async function webPentest(){
+  const target = prompt("أدخل رابط موقع تملكه أو لديك إذن بفحصه:");
+  if(!target) return;
+
+  let url;
+
+  try {
+    url = new URL(target);
+    if(url.protocol !== "https:") {
+      show("تنبيه: استخدم رابط HTTPS.");
+      return;
+    }
+  } catch {
+    show("ERROR: رابط غير صالح");
+    return;
+  }
+
+  show("WEB SECURITY CHECK\n\nجاري فحص إعدادات الأمان...");
+
+  try {
+    const response = await fetch(url.href, {
+      method: "GET",
+      mode: "cors"
+    });
+
+    const headers = response.headers;
+    const checks = [
+      ["Content-Security-Policy", headers.get("content-security-policy")],
+      ["Strict-Transport-Security", headers.get("strict-transport-security")],
+      ["X-Content-Type-Options", headers.get("x-content-type-options")],
+      ["X-Frame-Options", headers.get("x-frame-options")]
+    ];
+
+    let report = "WEB SECURITY REPORT\n";
+    report += "\nHTTP STATUS: " + response.status + "\n";
+
+    checks.forEach(([name, value]) => {
+      report += "\n" + name + ": " +
+        (value ? "PRESENT" : "NOT VISIBLE");
+    });
+
+    show(report);
+  } catch {
+    show("تعذر قراءة النتائج.\nقد يمنع الموقع طلبات CORS.\nهذا لا يعني أن الموقع غير آمن.");
+  }
+}
+function about(){
+ show('ALI-KHALIL\nCyber Security Tools\nVersion 1.0\nDeveloper: ALI');
+}
+
+function clearOutput(){
+ show('TERMINAL CLEARED\nSYSTEM ONLINE');
+}
+</script>
+<script src="js/tools/network.js"></script>
+<script src="js/tools/port-scanner.js"></script>
+<script src="js/tools/device.js"></script>
+</body>
+</html>
