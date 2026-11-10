@@ -28,3 +28,14 @@ const NetworkTools = {
 };
 
 window.NetworkTools = NetworkTools;
+
+window.networkStatus = async function() {
+  const info = await window.NetworkTools.connectionInfo();
+  show(
+    "NETWORK STATUS\n\n" +
+    "Internet: " + (info.online ? "CONNECTED" : "OFFLINE") +
+    "\nType: " + info.type +
+    "\nDownlink: " + info.downlink +
+    "\nResponse time: " + info.rtt
+  );
+};

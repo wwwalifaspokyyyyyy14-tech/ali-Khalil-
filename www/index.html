@@ -40,7 +40,7 @@ button,input{
  border-radius:6px;width:100%;margin-top:8px
 }
 footer{text-align:center;margin-top:25px;color:#477b57}
- .card{position:relative;overflow:hidden;box-shadow:0 0 8px #00ff6622;transition:.25s}.card:active{transform:scale(.96);box-shadow:0 0 22px #00ff66;border-color:#00ff66}header{animation:glow 3s infinite alternate}@keyframes glow{from{box-shadow:0 0 8px #00ff6633}to{box-shadow:0 0 25px #00ff6688}}button:active{box-shadow:0 0 15px #00ff66}</style>
+ .card{position:relative;overflow:hidden;box-shadow:0 0 8px #00ff6622;transition:.25s}.card:active{transform:scale(.96);box-shadow:0 0 22px #00ff66;border-color:#00ff66}header{animation:glow 3s infinite alternate}@keyframes glow{from{box-shadow:0 0 8px #00ff6633}to{box-shadow:0 0 25px #00ff6688}}button:active{box-shadow:0 0 15px #00ff66}body>*:not(#matrix-bg){position:relative;z-index:1}</style>
 <style>@keyframes hackerType{from{width:0}to{width:100%}}header:after{content:root;content:"root@ALI-KHALIL:~# SYSTEM INITIALIZING...";display:block;overflow:hidden;white-space:nowrap;max-width:100%;margin:15px auto 0;direction:ltr;color:#00ff66;border-right:2px solid #00ff66;animation:hackerType 5s steps(40) infinite alternate}</style></head>
 <body>
 
@@ -51,6 +51,7 @@ footer{text-align:center;margin-top:25px;color:#477b57}
 </header>
 
 <div class="grid">
+<div class="card" onclick="networkStatus()">📡<b>NETWORK STATUS</b></div>
 <div class="card" onclick="device()">
 📱<b>معلومات الجهاز</b>
 </div>
@@ -139,15 +140,21 @@ function matrix(){
  show(result);
 }
 async function webPentest(){
-  const target = prompt("أدخل رابط موقع تملكه أو لديك إذن بفحصه:");
+  const target = prompt("أدخل رابط موقع تملكه أو لديك تصريح بفحصه:");
   if(!target) return;
 
   let url;
 
   try {
-    url = new URL(target);
-    if(url.protocol !== "https:") {
-      show("تنبيه: استخدم رابط HTTPS.");
+    url = new URL(target.trim());
+
+    if(!["http:", "https:"].includes(url.protocol)){
+      show("ERROR: Protocol not supported");
+      return;
+    }
+
+    if(url.username || url.password){
+      show("WARNING: الرابط يحتوي على بيانات دخول.");
       return;
     }
   } catch {
@@ -155,35 +162,47 @@ async function webPentest(){
     return;
   }
 
-  show("WEB SECURITY CHECK\n\nجاري فحص إعدادات الأمان...");
+  let report = "ALI-KHALIL WEB SECURITY REPORT\n";
+  report += "-------------------------\n";
+  report += "DOMAIN: " + url.hostname + "\n";
+  report += "PROTOCOL: " + url.protocol + "\n";
+  report += "HTTPS: " + (url.protocol === "https:" ? "YES" : "NO") + "\n";
+  report += "\nSECURITY HEADERS\n";
+
+  show(report + "\nجاري الفحص...");
 
   try {
     const response = await fetch(url.href, {
       method: "GET",
-      mode: "cors"
+      mode: "cors",
+      credentials: "omit"
     });
 
-    const headers = response.headers;
-    const checks = [
-      ["Content-Security-Policy", headers.get("content-security-policy")],
-      ["Strict-Transport-Security", headers.get("strict-transport-security")],
-      ["X-Content-Type-Options", headers.get("x-content-type-options")],
-      ["X-Frame-Options", headers.get("x-frame-options")]
-    ];
-
-    let report = "WEB SECURITY REPORT\n";
     report += "\nHTTP STATUS: " + response.status + "\n";
 
-    checks.forEach(([name, value]) => {
+    const headers = [
+      "content-security-policy",
+      "strict-transport-security",
+      "x-content-type-options",
+      "x-frame-options",
+      "referrer-policy"
+    ];
+
+    for(const name of headers){
+      const value = response.headers.get(name);
       report += "\n" + name + ": " +
         (value ? "PRESENT" : "NOT VISIBLE");
-    });
-
-    show(report);
+    }
   } catch {
-    show("تعذر قراءة النتائج.\nقد يمنع الموقع طلبات CORS.\nهذا لا يعني أن الموقع غير آمن.");
+    report += "\nتعذرت قراءة الترويسات.";
+    report += "\nقد تكون قيود CORS هي السبب.";
   }
+
+  report += "\n\nEND OF PASSIVE CHECK";
+  report += "\nالنتائج ليست إثباتاً شاملاً لأمان الموقع.";
+  show(report);
 }
+
 function about(){
  show('ALI-KHALIL\nCyber Security Tools\nVersion 1.0\nDeveloper: ALI');
 }
@@ -195,5 +214,5 @@ function clearOutput(){
 <script src="js/tools/network.js"></script>
 <script src="js/tools/port-scanner.js"></script>
 <script src="js/tools/device.js"></script>
-<canvas id="matrix-bg" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;opacity:.13;z-index:-1"></canvas><script>const c=document.getElementById("matrix-bg"),x=c.getContext("2d");let w,h,cols,y=[];function fit(){w=c.width=innerWidth;h=c.height=innerHeight;cols=Math.floor(w/16);y=Array(cols).fill(1)}fit();onresize=fit;setInterval(()=>{x.fillStyle="rgba(0,0,0,.08)";x.fillRect(0,0,w,h);x.fillStyle="#00ff66";x.font="14px monospace";y.forEach((v,i)=>{x.fillText(Math.random().toString(36).slice(2,3),i*16,v*16);if(v*16>h&&Math.random()>.975)y[i]=0;y[i]++})},55)</script></body>
+<canvas id="matrix-bg" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;opacity:.13;z-index:0"></canvas><script>const c=document.getElementById("matrix-bg"),x=c.getContext("2d");let w,h,cols,y=[];function fit(){w=c.width=innerWidth;h=c.height=innerHeight;cols=Math.floor(w/16);y=Array(cols).fill(1)}fit();onresize=fit;setInterval(()=>{x.fillStyle="rgba(0,0,0,.08)";x.fillRect(0,0,w,h);x.fillStyle="#00ff66";x.font="14px monospace";y.forEach((v,i)=>{x.fillText(Math.random().toString(36).slice(2,3),i*16,v*16);if(v*16>h&&Math.random()>.975)y[i]=0;y[i]++})},55)</script></body>
 </html>
